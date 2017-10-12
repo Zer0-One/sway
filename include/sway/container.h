@@ -3,8 +3,7 @@
 #include <sys/types.h>
 #include <wlc/wlc.h>
 #include <stdint.h>
-
-#include "list.h"
+#include <wlr/util/list.h>
 
 typedef struct sway_container swayc_t;
 

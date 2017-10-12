@@ -1,8 +1,7 @@
 #ifndef _SWAY_CRITERIA_H
 #define _SWAY_CRITERIA_H
-
 #include "container.h"
-#include "list.h"
+#include <wlr/util/list.h>
 
 /**
  * Maps criteria (as a list of criteria tokens) to a command list.

@@ -1,10 +1,8 @@
 #ifndef _SWAYBAR_CONFIG_H
 #define _SWAYBAR_CONFIG_H
-
 #include <stdint.h>
 #include <stdbool.h>
-
-#include "list.h"
+#include <wlr/util/list.h>
 #include "util.h"
 
 /**

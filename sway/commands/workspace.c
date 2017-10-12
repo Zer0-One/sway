@@ -1,11 +1,11 @@
 #define _XOPEN_SOURCE 500
 #include <string.h>
 #include <strings.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
 #include "sway/config.h"
 #include "sway/input_state.h"
 #include "sway/workspace.h"
-#include "list.h"
 #include "log.h"
 #include "stringop.h"
 

@@ -9,8 +9,7 @@
 #include <wlc/wlc.h>
 #include <xkbcommon/xkbcommon.h>
 #include <time.h>
-#include "wayland-desktop-shell-server-protocol.h"
-#include "list.h"
+#include <wlr/util/list.h>
 #include "layout.h"
 #include "container.h"
 
@@ -126,7 +125,6 @@ struct bar_config {
 	char *id;
 	uint32_t modifier;
 	list_t *outputs;
-	enum desktop_shell_panel_position position;
 	list_t *bindings;
 	char *status_command;
 	bool pango_markup;

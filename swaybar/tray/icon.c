@@ -29,7 +29,7 @@
 static list_t *find_inherits(const char *theme_dir) {
 	const char inherits[] = "Inherits";
 	const char index_name[] = "index.theme";
-	list_t *themes = create_list();
+	list_t *themes = list_create();
 	FILE *index = NULL;
 	char *path = malloc(strlen(theme_dir) + sizeof(index_name));
 	if (!path) {
@@ -151,7 +151,7 @@ fail:
  * Does not check for duplicates
  */
 static list_t *find_all_theme_dirs(const char *theme) {
-	list_t *dirs = create_list();
+	list_t *dirs = list_create();
 	if (!dirs) {
 		return NULL;
 	}
@@ -185,7 +185,7 @@ static int subdir_str_cmp(const void *_subdir, const void *_str) {
  * generates a list of struct subdirs
  */
 static list_t *split_subdirs(char *subdir_str) {
-	list_t *subdir_list = create_list();
+	list_t *subdir_list = list_create();
 	char *copy = strdup(subdir_str);
 	if (!subdir_list || !copy) {
 		list_free(subdir_list);

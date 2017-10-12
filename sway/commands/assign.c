@@ -3,7 +3,7 @@
 #include <string.h>
 #include "sway/commands.h"
 #include "sway/criteria.h"
-#include "list.h"
+#include <wlr/util/list.h>
 #include "log.h"
 
 struct cmd_results *cmd_assign(int argc, char **argv) {
@@ -36,7 +36,7 @@ struct cmd_results *cmd_assign(int argc, char **argv) {
 	}
 	crit->crit_raw = strdup(criteria);
 	crit->cmdlist = cmdlist;
-	crit->tokens = create_list();
+	crit->tokens = list_create();
 	char *err_str = extract_crit_tokens(crit->tokens, crit->crit_raw);
 
 	if (err_str) {

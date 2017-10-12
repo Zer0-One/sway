@@ -1,10 +1,8 @@
 #ifndef _SWAYBAR_STATUS_LINE_H
 #define _SWAYBAR_STATUS_LINE_H
-
 #include <stdint.h>
 #include <stdbool.h>
-
-#include "list.h"
+#include <wlr/util/list.h>
 #include "bar.h"
 
 typedef enum {UNDEF, TEXT, I3BAR} command_protocol;

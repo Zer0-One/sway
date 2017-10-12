@@ -125,7 +125,7 @@ static void ipc_parse_config(struct config *config, const char *payload) {
 		free(config->outputs->items[i]);
 	}
 	list_free(config->outputs);
-	config->outputs = create_list();
+	config->outputs = list_create();
 
 	if (outputs) {
 		int length = json_object_array_length(outputs);
@@ -256,7 +256,7 @@ static void ipc_update_workspaces(struct bar *bar) {
 		if (output->workspaces) {
 			free_workspaces(output->workspaces);
 		}
-		output->workspaces = create_list();
+		output->workspaces = list_create();
 	}
 
 	uint32_t len = 0;

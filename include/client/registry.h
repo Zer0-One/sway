@@ -3,9 +3,9 @@
 
 #include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
+#include <wlr/util/list.h>
 #include "wayland-desktop-shell-client-protocol.h"
 #include "wayland-swaylock-client-protocol.h"
-#include "list.h"
 
 enum mod_bit {
 	MOD_SHIFT = 1<<0,

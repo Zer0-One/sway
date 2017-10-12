@@ -144,8 +144,7 @@ static void ipc_json_describe_workspace(swayc_t *workspace, json_object *object)
 
 // window is in the scratchpad ? changed : none
 static const char *ipc_json_get_scratchpad_state(swayc_t *c) {
-	int i;
-	for (i = 0; i < scratchpad->length; i++) {
+	for (size_t i = 0; i < scratchpad->length; i++) {
 		if (scratchpad->items[i] == c) {
 			return "changed";
 		}
@@ -351,6 +350,7 @@ json_object *ipc_json_describe_bar_config(struct bar_config *bar) {
 	json_object_object_add(json, "mode", json_object_new_string(bar->mode));
 	json_object_object_add(json, "hidden_state", json_object_new_string(bar->hidden_state));
 	json_object_object_add(json, "modifier", json_object_new_string(get_modifier_name_by_mask(bar->modifier)));
+	/* TODO WLR
 	switch (bar->position) {
 	case DESKTOP_SHELL_PANEL_POSITION_TOP:
 		json_object_object_add(json, "position", json_object_new_string("top"));
@@ -365,6 +365,7 @@ json_object *ipc_json_describe_bar_config(struct bar_config *bar) {
 		json_object_object_add(json, "position", json_object_new_string("right"));
 		break;
 	}
+	*/
 	json_object_object_add(json, "status_command", json_object_new_string(bar->status_command));
 	json_object_object_add(json, "font", json_object_new_string((bar->font) ? bar->font : config->font));
 	if (bar->separator_symbol) {
@@ -440,8 +441,7 @@ json_object *ipc_json_describe_bar_config(struct bar_config *bar) {
 	// Add outputs if defined
 	if (bar->outputs && bar->outputs->length > 0) {
 		json_object *outputs = json_object_new_array();
-		int i;
-		for (i = 0; i < bar->outputs->length; ++i) {
+		for (size_t i = 0; i < bar->outputs->length; ++i) {
 			const char *name = bar->outputs->items[i];
 			json_object_array_add(outputs, json_object_new_string(name));
 		}
@@ -453,7 +453,7 @@ json_object *ipc_json_describe_bar_config(struct bar_config *bar) {
 
 json_object *ipc_json_describe_container_recursive(swayc_t *c) {
 	json_object *object = ipc_json_describe_container(c);
-	int i;
+	size_t i;
 
 	json_object *floating = json_object_new_array();
 	if (c->type != C_VIEW && c->floating) {

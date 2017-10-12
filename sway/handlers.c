@@ -1,3 +1,4 @@
+// TODO WLR
 #define _XOPEN_SOURCE 500
 #include <xkbcommon/xkbcommon.h>
 #include <strings.h>
@@ -813,7 +814,7 @@ static bool handle_key(wlc_handle view, uint32_t time, const struct wlc_modifier
 	modifiers_state_update(modifiers->mods);
 
 	// handle bindings
-	list_t *candidates = create_list();
+	list_t *candidates = list_create();
 	for (i = 0; i < mode->bindings->length; ++i) {
 		struct sway_binding *binding = mode->bindings->items[i];
 		if ((modifiers->mods ^ binding->modifiers) == 0) {

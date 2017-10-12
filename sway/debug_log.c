@@ -47,7 +47,7 @@ static void container_log(const swayc_t *c, int depth) {
 	fprintf(stderr, "x:%4.f|y:%4.f|", c->x, c->y);
 	fprintf(stderr, "g:%3d|",c->gaps);
 	fprintf(stderr, "vis:%c|", c->visible?'t':'f');
-	fprintf(stderr, "children:%2d|",c->children?c->children->length:0);
+	fprintf(stderr, "children:%2zd|",c->children?c->children->length:0);
 	fprintf(stderr, "name:%.16s\n", c->name);
 }
 void layout_log(const swayc_t *c, int depth) {

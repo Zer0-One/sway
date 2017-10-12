@@ -1,12 +1,11 @@
 #ifndef _SWAYBAR_TRAY_H
 #define _SWAYBAR_TRAY_H
-
 #include <stdint.h>
 #include <stdbool.h>
+#include <wlr/util/list.h>
 #include "swaybar/tray/dbus.h"
 #include "swaybar/tray/sni.h"
 #include "swaybar/bar.h"
-#include "list.h"
 
 extern struct tray *tray;
 

@@ -13,7 +13,7 @@ struct cmd_results *bar_cmd_id(int argc, char **argv) {
 	const char *oldname = config->current_bar->id;
 
 	// check if id is used by a previously defined bar
-	int i;
+	size_t i;
 	for (i = 0; i < config->bars->length; ++i) {
 		struct bar_config *find = config->bars->items[i];
 		if (strcmp(name, find->id) == 0 && config->current_bar != find) {

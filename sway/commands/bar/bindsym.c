@@ -2,7 +2,7 @@
 #include <string.h>
 #include "sway/commands.h"
 #include "sway/config.h"
-#include "list.h"
+#include <wlr/util/list.h>
 #include "log.h"
 #include "stringop.h"
 

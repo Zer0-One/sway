@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <wlc/wlc.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,7 +14,7 @@
 #include <sys/capability.h>
 #include <sys/prctl.h>
 #endif
-#include "sway/extensions.h"
+#include "sway/server.h"
 #include "sway/layout.h"
 #include "sway/config.h"
 #include "sway/security.h"
@@ -35,22 +34,12 @@ static int exit_value = 0;
 void sway_terminate(int exit_code) {
 	terminate_request = true;
 	exit_value = exit_code;
-	wlc_terminate();
+	// TODO: clean up wlroots state
 }
 
 void sig_handler(int signal) {
 	close_views(&root_container);
 	sway_terminate(EXIT_SUCCESS);
-}
-
-static void wlc_log_handler(enum wlc_log_type type, const char *str) {
-	if (type == WLC_LOG_ERROR) {
-		sway_log(L_ERROR, "[wlc] %s", str);
-	} else if (type == WLC_LOG_WARN) {
-		sway_log(L_INFO, "[wlc] %s", str);
-	} else {
-		sway_log(L_DEBUG, "[wlc] %s", str);
-	}
 }
 
 void detect_raspi() {
@@ -166,13 +155,6 @@ static void log_env() {
 		"SWAY_CURSOR_THEME",
 		"SWAY_CURSOR_SIZE",
 		"SWAYSOCK",
-		"WLC_DRM_DEVICE",
-		"WLC_SHM",
-		"WLC_OUTPUTS",
-		"WLC_XWAYLAND",
-		"WLC_LIBINPUT",
-		"WLC_REPEAT_DELAY",
-		"WLC_REPEAT_RATE",
 		"XKB_DEFAULT_RULES",
 		"XKB_DEFAULT_MODEL",
 		"XKB_DEFAULT_LAYOUT",
@@ -350,7 +332,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	// we need to setup logging before wlc_init in case it fails.
+	// TODO: switch sway logging to go through wlr?
 	if (debug) {
 		init_log(L_DEBUG);
 	} else if (verbose || validate) {
@@ -401,23 +383,11 @@ int main(int argc, char **argv) {
 	}
 #endif
 
-	wlc_log_set_handler(wlc_log_handler);
 	log_kernel();
 	log_distro();
 	log_env();
 	detect_proprietary();
 	detect_raspi();
-
-	input_devices = create_list();
-
-	/* Changing code earlier than this point requires detailed review */
-	/* (That code runs as root on systems without logind, and wlc_init drops to
-	 * another user.) */
-	register_wlc_handlers();
-	if (!wlc_init()) {
-		return 1;
-	}
-	register_extensions();
 
 #ifdef __linux__
 	if (suid) {
@@ -435,14 +405,17 @@ int main(int argc, char **argv) {
 #endif
 	// handle SIGTERM signals
 	signal(SIGTERM, sig_handler);
-
 	// prevent ipc from crashing sway
 	signal(SIGPIPE, SIG_IGN);
 
 	sway_log(L_INFO, "Starting sway version " SWAY_VERSION "\n");
 
-	init_layout();
+	struct sway_server server;
+	if (!server_init(&server)) {
+		return 1;
+	}
 
+	init_layout();
 	ipc_init();
 
 	if (validate) {
@@ -461,10 +434,10 @@ int main(int argc, char **argv) {
 	security_sanity_check();
 
 	if (!terminate_request) {
-		wlc_run();
+		wl_display_run(server.wl_display);
 	}
 
-	list_free(input_devices);
+	server_fini(&server);
 
 	ipc_terminate();
 

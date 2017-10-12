@@ -63,7 +63,7 @@ struct cmd_results *bar_cmd_mode(int argc, char **argv) {
 		id = argv[1];
 	}
 
-	int i;
+	size_t i;
 	struct bar_config *bar;
 	for (i = 0; i < config->bars->length; ++i) {
 		bar = config->bars->items[i];

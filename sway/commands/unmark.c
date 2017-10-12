@@ -1,7 +1,7 @@
 #include <string.h>
 #include <strings.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
-#include "list.h"
 #include "stringop.h"
 
 struct cmd_results *cmd_unmark(int argc, char **argv) {

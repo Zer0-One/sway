@@ -1,8 +1,8 @@
 #define _XOPEN_SOURCE 500
 #include <string.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
 #include "sway/criteria.h"
-#include "list.h"
 #include "log.h"
 #include "stringop.h"
 
@@ -20,7 +20,7 @@ struct cmd_results *cmd_for_window(int argc, char **argv) {
 	}
 	crit->crit_raw = strdup(criteria);
 	crit->cmdlist = cmdlist;
-	crit->tokens = create_list();
+	crit->tokens = list_create();
 	char *err_str = extract_crit_tokens(crit->tokens, crit->crit_raw);
 
 	if (err_str) {

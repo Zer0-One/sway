@@ -35,7 +35,7 @@ static swayc_t *new_swayc(enum swayc_types type) {
 	c->nb_master = 1;
 	c->nb_slave_groups = 1;
 	if (type != C_VIEW) {
-		c->children = create_list();
+		c->children = list_create();
 	}
 	return c;
 }
@@ -99,7 +99,7 @@ static void update_root_geometry() {
 	int child_width;
 	int child_height;
 
-	for (int i = 0; i < root_container.children->length; ++i) {
+	for (size_t i = 0; i < root_container.children->length; ++i) {
 		child = root_container.children->items[i];
 		child_width = child->width + child->x;
 		child_height = child->height + child->y;
@@ -138,7 +138,7 @@ swayc_t *new_output(wlc_handle handle) {
 	sway_log(L_DEBUG, "New output %" PRIuPTR ":%s", handle, name);
 
 	struct output_config *oc = NULL, *all = NULL;
-	int i;
+	size_t i;
 	for (i = 0; i < config->output_configs->length; ++i) {
 		struct output_config *cur = config->output_configs->items[i];
 		if (strcasecmp(name, cur->name) == 0) {
@@ -168,7 +168,7 @@ swayc_t *new_output(wlc_handle handle) {
 	output->name = name ? strdup(name) : NULL;
 	output->width = size.w;
 	output->height = size.h;
-	output->unmanaged = create_list();
+	output->unmanaged = list_create();
 	output->bg_pid = 0;
 
 	apply_output_config(oc, output);
@@ -231,7 +231,7 @@ swayc_t *new_workspace(swayc_t *output, const char *name) {
 	workspace->height = output->height;
 	workspace->name = !name ? NULL : strdup(name);
 	workspace->visible = false;
-	workspace->floating = create_list();
+	workspace->floating = list_create();
 
 	add_child(output, workspace);
 	sort_workspaces(output);
@@ -265,8 +265,7 @@ swayc_t *new_container(swayc_t *child, enum swayc_layouts layout) {
 		cont->focused = workspace->focused;
 		workspace->focused = cont;
 		// set all children focu to container
-		int i;
-		for (i = 0; i < workspace->children->length; ++i) {
+		for (size_t i = 0; i < workspace->children->length; ++i) {
 			((swayc_t *)workspace->children->items[i])->parent = cont;
 		}
 		// Swap children
@@ -474,7 +473,7 @@ swayc_t *destroy_workspace(swayc_t *workspace) {
 	} else {
 		// Move children to a different workspace on this output
 		swayc_t *new_workspace = NULL;
-		int i;
+		size_t i;
 		for(i = 0; i < output->children->length; i++) {
 			if(output->children->items[i] != workspace) {
 				break;
@@ -485,11 +484,11 @@ swayc_t *destroy_workspace(swayc_t *workspace) {
 		sway_log(L_DEBUG, "moving children to different workspace '%s' -> '%s'",
 			workspace->name, new_workspace->name);
 
-		for(i = 0; i < workspace->children->length; i++) {
+		for (i = 0; i < workspace->children->length; i++) {
 			move_container_to(workspace->children->items[i], new_workspace);
 		}
 
-		for(i = 0; i < workspace->floating->length; i++) {
+		for (i = 0; i < workspace->floating->length; i++) {
 			move_container_to(workspace->floating->items[i], new_workspace);
 		}
 	}
@@ -534,7 +533,7 @@ swayc_t *swayc_by_test(swayc_t *container, bool (*test)(swayc_t *view, void *dat
 		return NULL;
 	}
 	// Special case for checking floating stuff
-	int i;
+	size_t i;
 	if (container->type == C_WORKSPACE) {
 		for (i = 0; i < container->floating->length; ++i) {
 			swayc_t *child = container->floating->items[i];
@@ -714,7 +713,7 @@ swayc_t *container_under_pointer(void) {
 	while (lookup && lookup->type != C_VIEW) {
 		int i;
 		int len;
-		for (int _i = 0; lookup->unmanaged && _i < lookup->unmanaged->length; ++_i) {
+		for (size_t _i = 0; lookup->unmanaged && _i < lookup->unmanaged->length; ++_i) {
 			wlc_handle *handle = lookup->unmanaged->items[_i];
 			const struct wlc_geometry *geo = wlc_view_get_geometry(*handle);
 			if (origin.x >= geo->origin.x && origin.y >= geo->origin.y
@@ -769,7 +768,7 @@ swayc_t *container_find(swayc_t *container, bool (*f)(swayc_t *, const void *), 
 
 	swayc_t *con;
 	if (container->type == C_WORKSPACE) {
-		for (int i = 0; i < container->floating->length; ++i) {
+		for (size_t i = 0; i < container->floating->length; ++i) {
 			con = container->floating->items[i];
 			if (f(con, data)) {
 				return con;
@@ -781,7 +780,7 @@ swayc_t *container_find(swayc_t *container, bool (*f)(swayc_t *, const void *), 
 		}
 	}
 
-	for (int i = 0; i < container->children->length; ++i) {
+	for (size_t i = 0; i < container->children->length; ++i) {
 		con = container->children->items[i];
 		if (f(con, data)) {
 			return con;
@@ -849,7 +848,7 @@ int swayc_gap(swayc_t *container) {
 
 void container_map(swayc_t *container, void (*f)(swayc_t *view, void *data), void *data) {
 	if (container) {
-		int i;
+		size_t i;
 		if (container->children)  {
 			for (i = 0; i < container->children->length; ++i) {
 				swayc_t *child = container->children->items[i];
@@ -996,7 +995,7 @@ swayc_t *swayc_change_layout(swayc_t *container, enum swayc_layouts layout) {
 			layout == L_AUTO_LEFT || layout == L_AUTO_RIGHT
 			? L_HORIZ : L_VERT;
 		if (new_major != prev_major) {
-			for (int i = 0; i < container->children->length; ++i) {
+			for (size_t i = 0; i < container->children->length; ++i) {
 				swayc_t *child = container->children->items[i];
 				double h = child->height;
 				child->height = child->width;

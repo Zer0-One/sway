@@ -1,6 +1,6 @@
 #ifndef _SWAY_STRINGOP_H
 #define _SWAY_STRINGOP_H
-#include "list.h"
+#include <wlr/util/list.h>
 
 #if !HAVE_DECL_SETENV
 // Not sure why we need to provide this

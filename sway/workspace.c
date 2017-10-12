@@ -7,8 +7,8 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/types.h>
+#include <wlr/util/list.h>
 #include "sway/ipc-server.h"
-#include "sway/extensions.h"
 #include "sway/workspace.h"
 #include "sway/layout.h"
 #include "sway/container.h"
@@ -17,7 +17,6 @@
 #include "sway/focus.h"
 #include "stringop.h"
 #include "util.h"
-#include "list.h"
 #include "log.h"
 #include "ipc.h"
 
@@ -29,7 +28,7 @@ struct workspace_by_number_data {
 };
 
 static bool workspace_valid_on_output(const char *output_name, const char *ws_name) {
-	int i;
+	size_t i;
 	for (i = 0; i < config->workspace_outputs->length; ++i) {
 		struct workspace_output *wso = config->workspace_outputs->items[i];
 		if (strcasecmp(wso->workspace, ws_name) == 0) {
@@ -44,8 +43,8 @@ static bool workspace_valid_on_output(const char *output_name, const char *ws_na
 
 char *workspace_next_name(const char *output_name) {
 	sway_log(L_DEBUG, "Workspace: Generating new workspace name for output %s", output_name);
-	int i;
-	int l = 1;
+	size_t i;
+	size_t l = 1;
 	// Scan all workspace bindings to find the next available workspace name,
 	// if none are found/available then default to a number
 	struct sway_mode *mode = config->current_mode;
@@ -115,7 +114,7 @@ char *workspace_next_name(const char *output_name) {
 	}
 	// As a fall back, get the current number of active workspaces
 	// and return that + 1 for the next workspace's name
-	int ws_num = root_container.children->length;
+	size_t ws_num = root_container.children->length;
 	if (ws_num >= 10) {
 		l = 2;
 	} else if (ws_num >= 100) {
@@ -126,14 +125,14 @@ char *workspace_next_name(const char *output_name) {
 		sway_log(L_ERROR, "Could not allocate workspace name");
 		return NULL;
 	}
-	sprintf(name, "%d", ws_num++);
+	sprintf(name, "%zd", ws_num++);
 	return name;
 }
 
 swayc_t *workspace_create(const char* name) {
 	swayc_t *parent;
 	// Search for workspace<->output pair
-	int i, e = config->workspace_outputs->length;
+	size_t i, e = config->workspace_outputs->length;
 	for (i = 0; i < e; ++i) {
 		struct workspace_output *wso = config->workspace_outputs->items[i];
 		if (strcasecmp(wso->workspace, name) == 0)
@@ -208,7 +207,7 @@ swayc_t *workspace_output_prev_next_impl(swayc_t *output, bool next) {
 		return NULL;
 	}
 
-	int i;
+	size_t i;
 	for (i = 0; i < output->children->length; i++) {
 		if (output->children->items[i] == output->focused) {
 			return output->children->items[wrap(i + (next ? 1 : -1), output->children->length)];
@@ -231,9 +230,9 @@ swayc_t *workspace_prev_next_impl(swayc_t *workspace, bool next) {
 
 	swayc_t *current_output = workspace->parent;
 	int offset = next ? 1 : -1;
-	int start = next ? 0 : 1;
-	int end = next ? (current_output->children->length) - 1 : current_output->children->length;
-	int i;
+	size_t start = next ? 0 : 1;
+	size_t end = next ? (current_output->children->length) - 1 : current_output->children->length;
+	size_t i;
 	for (i = start; i < end; i++) {
 		if (current_output->children->items[i] == workspace) {
 			return current_output->children->items[i + offset];
@@ -241,7 +240,7 @@ swayc_t *workspace_prev_next_impl(swayc_t *workspace, bool next) {
 	}
 
 	// Given workspace is the first/last on the output, jump to the previous/next output
-	int num_outputs = root_container.children->length;
+	size_t num_outputs = root_container.children->length;
 	for (i = 0; i < num_outputs; i++) {
 		if (root_container.children->items[i] == current_output) {
 			swayc_t *next_output = root_container.children->items[wrap(i + offset, num_outputs)];
@@ -294,14 +293,14 @@ bool workspace_switch(swayc_t *workspace) {
 	// move sticky containers
 	if (swayc_parent_by_type(active_ws, C_OUTPUT) == swayc_parent_by_type(workspace, C_OUTPUT)) {
 		// don't change list while traversing it, use intermediate list instead
-		list_t *stickies = create_list();
-		for (int i = 0; i < active_ws->floating->length; i++) {
+		list_t *stickies = list_create();
+		for (size_t i = 0; i < active_ws->floating->length; i++) {
 			swayc_t *cont = active_ws->floating->items[i];
 			if (cont->sticky) {
 				list_add(stickies, cont);
 			}
 		}
-		for (int i = 0; i < stickies->length; i++) {
+		for (size_t i = 0; i < stickies->length; i++) {
 			swayc_t *cont = stickies->items[i];
 			sway_log(L_DEBUG, "Moving sticky container %p to %p:%s",
 					cont, workspace, workspace->name);
@@ -323,7 +322,7 @@ bool workspace_switch(swayc_t *workspace) {
 }
 
 swayc_t *workspace_for_pid(pid_t pid) {
-	int i;
+	size_t i;
 	swayc_t *ws = NULL;
 	struct pid_workspace *pw = NULL;
 

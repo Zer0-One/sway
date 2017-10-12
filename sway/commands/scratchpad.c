@@ -46,7 +46,7 @@ struct cmd_results *cmd_scratchpad(int argc, char **argv) {
 		if (!sp_view) {
 			if (current_container) {
 				// Haxor the scratchpad index if criteria'd
-				for (int i = 0; i < scratchpad->length; ++i) {
+				for (size_t i = 0; i < scratchpad->length; ++i) {
 					if (scratchpad->items[i] == current_container) {
 						sp_index = (i - 1) % scratchpad->length;
 					}

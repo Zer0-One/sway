@@ -36,8 +36,8 @@ struct cmd_results *cmd_focus(int argc, char **argv) {
 	} else if ((error = checkarg(argc, "focus", EXPECTED_EQUAL_TO, 1))) {
 		return error;
 	}
-	static int floating_toggled_index = 0;
-	static int tiled_toggled_index = 0;
+	static size_t floating_toggled_index = 0;
+	static size_t tiled_toggled_index = 0;
 	if (strcasecmp(argv[0], "left") == 0) {
 		move_focus(MOVE_LEFT);
 	} else if (strcasecmp(argv[0], "right") == 0) {
@@ -55,7 +55,7 @@ struct cmd_results *cmd_focus(int argc, char **argv) {
 	} else if (strcasecmp(argv[0], "prev") == 0) {
 		move_focus(MOVE_PREV);
 	} else if (strcasecmp(argv[0], "mode_toggle") == 0) {
-		int i;
+		size_t i;
 		swayc_t *workspace = swayc_active_workspace();
 		swayc_t *focused = get_focused_view(workspace);
 		if (focused->is_floating) {

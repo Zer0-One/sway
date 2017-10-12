@@ -2,10 +2,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <strings.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
 #include "sway/config.h"
 #include "sway/ipc-server.h"
-#include "list.h"
 #include "log.h"
 
 struct cmd_results *cmd_mode(int argc, char **argv) {
@@ -22,7 +22,7 @@ struct cmd_results *cmd_mode(int argc, char **argv) {
 	}
 	struct sway_mode *mode = NULL;
 	// Find mode
-	int i, len = config->modes->length;
+	size_t i, len = config->modes->length;
 	for (i = 0; i < len; ++i) {
 		struct sway_mode *find = config->modes->items[i];
 		if (strcasecmp(find->name, mode_name) == 0) {
@@ -37,7 +37,7 @@ struct cmd_results *cmd_mode(int argc, char **argv) {
 			return cmd_results_new(CMD_FAILURE, "mode", "Unable to allocate mode");
 		}
 		mode->name = strdup(mode_name);
-		mode->bindings = create_list();
+		mode->bindings = list_create();
 		list_add(config->modes, mode);
 	}
 	if (!mode) {

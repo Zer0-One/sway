@@ -1,8 +1,8 @@
 #include <string.h>
 #include <strings.h>
 #include <stdbool.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
-#include "list.h"
 #include "stringop.h"
 
 static void find_marks_callback(swayc_t *container, void *_mark) {
@@ -71,12 +71,12 @@ struct cmd_results *cmd_mark(int argc, char **argv) {
 					list_foreach(view->marks, free);
 					list_free(view->marks);
 
-					view->marks = create_list();
+					view->marks = list_create();
 					list_add(view->marks, mark);
 				}
 			}
 		} else {
-			view->marks = create_list();
+			view->marks = list_create();
 			list_add(view->marks, mark);
 		}
 	} else {

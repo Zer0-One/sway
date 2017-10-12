@@ -538,7 +538,7 @@ int main(int argc, char **argv) {
 	password_size = 1024;
 	password = malloc(password_size);
 	password[0] = '\0';
-	render_data.surfaces = create_list();
+	render_data.surfaces = list_create();
 	if (!socket_path) {
 		socket_path = get_socketpath();
 		if (!socket_path) {

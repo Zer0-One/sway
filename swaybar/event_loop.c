@@ -139,6 +139,6 @@ void init_event_loop() {
 	event_loop.fds.length = 0;
 	event_loop.fds.capacity = 10;
 	event_loop.fds.items = malloc(event_loop.fds.capacity * sizeof(struct pollfd));
-	event_loop.items = create_list();
-	event_loop.timers = create_list();
+	event_loop.items = list_create();
+	event_loop.timers = list_create();
 }

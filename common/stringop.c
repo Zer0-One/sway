@@ -4,10 +4,10 @@
 #include <string.h>
 #include <strings.h>
 #include <ctype.h>
+#include <wlr/util/list.h>
 #include "stringop.h"
 #include "log.h"
 #include "string.h"
-#include "list.h"
 
 const char whitespace[] = " \f\n\r\t\v";
 
@@ -69,7 +69,7 @@ int lenient_strcmp(char *a, char *b) {
 }
 
 list_t *split_string(const char *str, const char *delims) {
-	list_t *res = create_list();
+	list_t *res = list_create();
 	char *copy = strdup(str);
 	char *token;
 
@@ -84,8 +84,7 @@ list_t *split_string(const char *str, const char *delims) {
 }
 
 void free_flat_list(list_t *list) {
-	int i;
-	for (i = 0; i < list->length; ++i) {
+	for (size_t i = 0; i < list->length; ++i) {
 		free(list->items[i]);
 	}
 	list_free(list);
@@ -315,7 +314,7 @@ char *join_list(list_t *list, char *separator) {
 		len += (list->length - 1) * sep_len;
 	}
 
-	for (int i = 0; i < list->length; i++) {
+	for (size_t i = 0; i < list->length; i++) {
 		len += strlen(list->items[i]);
 	}
 
@@ -324,7 +323,7 @@ char *join_list(list_t *list, char *separator) {
 	char *p = res + strlen(list->items[0]);
 	strcpy(res, list->items[0]);
 
-	for (int i = 1; i < list->length; i++) {
+	for (size_t i = 1; i < list->length; i++) {
 		if (sep_len) {
 			memcpy(p, separator, sep_len);
 			p += sep_len;

@@ -68,7 +68,7 @@ static void parse_json(struct bar *bar, const char *text) {
 		list_free(bar->status->block_line);
 	}
 
-	bar->status->block_line = create_list();
+	bar->status->block_line = list_create();
 
 	int i;
 	for (i = 0; i < json_object_array_length(results); ++i) {
@@ -514,7 +514,7 @@ bool handle_status_line(struct bar *bar) {
 
 struct status_line *init_status_line() {
 	struct status_line *line = malloc(sizeof(struct status_line));
-	line->block_line = create_list();
+	line->block_line = list_create();
 	line->text_line = NULL;
 	line->protocol = UNDEF;
 	line->click_events = false;

@@ -27,7 +27,7 @@
 static void bar_init(struct bar *bar) {
 	bar->config = init_config();
 	bar->status = init_status_line();
-	bar->outputs = create_list();
+	bar->outputs = list_create();
 }
 
 static void spawn_status_cmd_proc(struct bar *bar) {
@@ -81,9 +81,9 @@ struct output *new_output(const char *name) {
 	output->name = strdup(name);
 	output->window = NULL;
 	output->registry = NULL;
-	output->workspaces = create_list();
+	output->workspaces = list_create();
 #ifdef ENABLE_TRAY
-	output->items = create_list();
+	output->items = list_create();
 #endif
 	return output;
 }

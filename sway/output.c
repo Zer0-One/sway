@@ -1,9 +1,10 @@
 #include <strings.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <wlr/util/list.h>
 #include "sway/output.h"
 #include "log.h"
-#include "list.h"
+#include "util.h"
 
 void output_get_scaled_size(wlc_handle handle, struct wlc_size *size) {
 	*size = *wlc_output_get_resolution(handle);
@@ -37,7 +38,7 @@ swayc_t *output_by_name(const char* name, const struct wlc_point *abs_pos) {
 			output = swayc_opposite_output(MOVE_UP, abs_pos);
 		}
 	} else {
-		for(int i = 0; i < root_container.children->length; ++i) {
+		for (size_t i = 0; i < root_container.children->length; ++i) {
 			swayc_t *c = root_container.children->items[i];
 			if (c->type == C_OUTPUT && strcasecmp(c->name, name) == 0) {
 				return c;
@@ -58,7 +59,7 @@ swayc_t *swayc_opposite_output(enum movement_direction dir,
 	switch(dir) {
 		case MOVE_LEFT:
 		case MOVE_RIGHT: ;
-			for (int i = 0; i < root_container.children->length; ++i) {
+			for (size_t i = 0; i < root_container.children->length; ++i) {
 				swayc_t *c = root_container.children->items[i];
 				if (abs_pos->y >= c->y && abs_pos->y <= c->y + c->height) {
 					if (!opposite) {
@@ -73,7 +74,7 @@ swayc_t *swayc_opposite_output(enum movement_direction dir,
 			break;
 		case MOVE_UP:
 		case MOVE_DOWN: ;
-			for (int i = 0; i < root_container.children->length; ++i) {
+			for (size_t i = 0; i < root_container.children->length; ++i) {
 				swayc_t *c = root_container.children->items[i];
 				if (abs_pos->x >= c->x && abs_pos->x <= c->x + c->width) {
 					if (!opposite) {
@@ -116,7 +117,7 @@ swayc_t *swayc_adjacent_output(swayc_t *output, enum movement_direction dir,
 		case MOVE_LEFT:
 		case MOVE_RIGHT: ;
 			double delta_y = 0;
-			for(int i = 0; i < root_container.children->length; ++i) {
+			for (size_t i = 0; i < root_container.children->length; ++i) {
 				swayc_t *c = root_container.children->items[i];
 				if (c == output || c->type != C_OUTPUT) {
 					continue;
@@ -169,7 +170,7 @@ swayc_t *swayc_adjacent_output(swayc_t *output, enum movement_direction dir,
 		case MOVE_UP:
 		case MOVE_DOWN: ;
 			double delta_x = 0;
-			for(int i = 0; i < root_container.children->length; ++i) {
+			for (size_t i = 0; i < root_container.children->length; ++i) {
 				swayc_t *c = root_container.children->items[i];
 				if (c == output || c->type != C_OUTPUT) {
 					continue;

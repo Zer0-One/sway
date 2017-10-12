@@ -54,7 +54,7 @@ bool is_valid_color(const char *color) {
 
 int main(int argc, const char **argv) {
 	init_log(L_INFO);
-	surfaces = create_list();
+	surfaces = list_create();
 	registry = registry_poll();
 
 	if (argc != 4) {

@@ -444,8 +444,8 @@ int init_sni_watcher() {
 		return -1;
 	}
 
-	items = create_list();
-	hosts = create_list();
+	items = list_create();
+	hosts = list_create();
 
 	int status = dbus_bus_request_name(conn, "org.freedesktop.StatusNotifierWatcher",
 			DBUS_NAME_FLAG_REPLACE_EXISTING,

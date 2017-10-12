@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
 #include "sway/config.h"
-#include "list.h"
 #include "stringop.h"
 
 // sort in order of longest->shortest
@@ -37,7 +37,7 @@ struct cmd_results *cmd_set(int argc, char **argv) {
 
 	struct sway_variable *var = NULL;
 	// Find old variable if it exists
-	int i;
+	size_t i;
 	for (i = 0; i < config->symbols->length; ++i) {
 		var = config->symbols->items[i];
 		if (strcmp(var->name, argv[0]) == 0) {

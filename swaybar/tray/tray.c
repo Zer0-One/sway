@@ -78,7 +78,7 @@ static void get_items_reply(DBusPendingCall *pending, void *_data) {
 	// Clear list
 	list_foreach(tray->items, (void (*)(void *))sni_free);
 	list_free(tray->items);
-	tray->items = create_list();
+	tray->items = list_create();
 
 	// O(n) function, could be faster dynamically reading values
 	int len = dbus_message_iter_get_element_count(&variant);
@@ -196,7 +196,7 @@ static DBusHandlerResult signal_handler(DBusConnection *connection,
 static int init_host() {
 	tray = (struct tray *)malloc(sizeof(tray));
 
-	tray->items = create_list();
+	tray->items = list_create();
 
 	DBusError error;
 	dbus_error_init(&error);

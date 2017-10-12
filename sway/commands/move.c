@@ -1,12 +1,12 @@
 #include <string.h>
 #include <strings.h>
 #include <wlc/wlc.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
 #include "sway/container.h"
 #include "sway/layout.h"
 #include "sway/output.h"
 #include "sway/workspace.h"
-#include "list.h"
 #include "stringop.h"
 
 struct cmd_results *cmd_move(int argc, char **argv) {
@@ -132,7 +132,7 @@ struct cmd_results *cmd_move(int argc, char **argv) {
 			return cmd_results_new(CMD_FAILURE, "move scratchpad", "Can only move containers and views.");
 		}
 		swayc_t *view = current_container;
-		int i;
+		size_t i;
 		for (i = 0; i < scratchpad->length; i++) {
 			if (scratchpad->items[i] == view) {
 				hide_view_in_scratchpad(view);

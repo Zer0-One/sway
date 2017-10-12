@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <wlc/wlc.h>
-#include "sway/extensions.h"
+#include <wlr/util/list.h>
 #include "sway/config.h"
 #include "sway/container.h"
 #include "sway/workspace.h"
@@ -12,7 +12,7 @@
 #include "sway/ipc-server.h"
 #include "sway/border.h"
 #include "sway/layout.h"
-#include "list.h"
+#include "util.h"
 #include "log.h"
 
 swayc_t root_container;
@@ -27,16 +27,16 @@ void init_layout(void) {
 	root_container.type = C_ROOT;
 	root_container.layout = L_NONE;
 	root_container.name = strdup("root");
-	root_container.children = create_list();
+	root_container.children = list_create();
 	root_container.handle = -1;
 	root_container.visible = true;
 	current_focus = &root_container;
-	scratchpad = create_list();
+	scratchpad = list_create();
 }
 
 int index_child(const swayc_t *child) {
 	swayc_t *parent = child->parent;
-	int i, len;
+	size_t i, len;
 	if (!child->is_floating) {
 		len = parent->children->length;
 		for (i = 0; i < len; ++i) {
@@ -81,7 +81,7 @@ static double *get_width(swayc_t *cont) {
 }
 
 void insert_child(swayc_t *parent, swayc_t *child, int index) {
-	if (index > parent->children->length) {
+	if (index > (int)parent->children->length) {
 		index = parent->children->length;
 	}
 	if (index < 0) {
@@ -106,9 +106,9 @@ void insert_child(swayc_t *parent, swayc_t *child, int index) {
 			get_maj_dim = get_height;
 			get_min_dim = get_width;
 		}
-		for (int i = index; i < parent->children->length;) {
-			int start = auto_group_start_index(parent, i);
-			int end = auto_group_end_index(parent, i);
+		for (size_t i = index; i < parent->children->length;) {
+			size_t start = auto_group_start_index(parent, i);
+			size_t end = auto_group_end_index(parent, i);
 			swayc_t *first = parent->children->items[start];
 			if (start + 1 < parent->children->length) {
 				/* preserve the group's dimension along major axis */
@@ -119,7 +119,7 @@ void insert_child(swayc_t *parent, swayc_t *child, int index) {
 				break;
 			}
 			double remaining = *get_min_dim(parent);
-			for (int j = end - 1; j > start; --j) {
+			for (size_t j = end - 1; j > start; --j) {
 				swayc_t *sibling = parent->children->items[j];
 				if (sibling == child) {
 					/* the inserted child won't yet have its minor
@@ -213,7 +213,7 @@ swayc_t *replace_child(swayc_t *child, swayc_t *new_child) {
 }
 
 swayc_t *remove_child(swayc_t *child) {
-	int i;
+	size_t i;
 	swayc_t *parent = child->parent;
 	if (child->is_floating) {
 		// Special case for floating views
@@ -242,9 +242,9 @@ swayc_t *remove_child(swayc_t *child) {
 				get_maj_dim = get_height;
 				get_min_dim = get_width;
 			}
-			for (int j = parent->children->length - 1; j >= i;) {
-				int start = auto_group_start_index(parent, j);
-				int end = auto_group_end_index(parent, j);
+			for (size_t j = parent->children->length - 1; j >= i;) {
+				size_t start = auto_group_start_index(parent, j);
+				size_t end = auto_group_end_index(parent, j);
 				swayc_t *first = parent->children->items[start];
 				if (i == start) {
 					/* removed element was first child in the current group,
@@ -256,7 +256,7 @@ swayc_t *remove_child(swayc_t *child) {
 				}
 				if (end != parent->children->length) {
 					double remaining = *get_min_dim(parent);
-					for (int k = start; k < end - 1; ++k) {
+					for (size_t k = start; k < end - 1; ++k) {
 						swayc_t *sibling = parent->children->items[k];
 						remaining -= *get_min_dim(sibling);
 					}
@@ -332,10 +332,9 @@ void swap_geometry(swayc_t *a, swayc_t *b) {
 	b->height = h;
 }
 
-static void swap_children(swayc_t *container, int a, int b) {
-	if (a >= 0 && b >= 0 && a < container->children->length
-			&& b < container->children->length
-		&& a != b) {
+static void swap_children(swayc_t *container, size_t a, size_t b) {
+	if (a < container->children->length &&
+			b < container->children->length && a != b) {
 		swayc_t *pa = (swayc_t *)container->children->items[a];
 		swayc_t *pb = (swayc_t *)container->children->items[b];
 		container->children->items[a] = container->children->items[b];
@@ -437,13 +436,13 @@ void move_container(swayc_t *container, enum movement_direction dir, int move_am
 				// Next/Prev always wrap.
 				if (desired < 0) {
 					desired += parent->children->length;
-				} else if (desired >= parent->children->length) {
+				} else if (desired >= (int)parent->children->length) {
 					desired = 0;
 				}
 			}
 			// when it has ascended, legal insertion position is 0:len
 			// when it has not, legal insertion position is 0:len-1
-			if (desired >= 0 && desired - ascended < parent->children->length) {
+			if (desired >= 0 && desired - ascended < (int)parent->children->length) {
 				if (!ascended) {
 					child = parent->children->items[desired];
 					// Move container into sibling container
@@ -676,7 +675,7 @@ void update_layout_geometry(swayc_t *parent, enum swayc_layouts prev_layout) {
 	case L_STACKED:
 		if (prev_layout != L_TABBED && prev_layout != L_STACKED) {
 			// cache current geometry for all non-float children
-			int i;
+			size_t i;
 			for (i = 0; i < parent->children->length; ++i) {
 				swayc_t *child = parent->children->items[i];
 				child->cached_geometry.origin.x = child->x;
@@ -689,7 +688,7 @@ void update_layout_geometry(swayc_t *parent, enum swayc_layouts prev_layout) {
 	default:
 		if (prev_layout == L_TABBED || prev_layout == L_STACKED) {
 			// recover cached geometry for all non-float children
-			int i;
+			size_t i;
 			for (i = 0; i < parent->children->length; ++i) {
 				swayc_t *child = parent->children->items[i];
 				// only recoverer cached geometry if non-zero
@@ -831,7 +830,8 @@ void update_geometry(swayc_t *container) {
 		int title_bar_height = config->font_height + 4; //borders + padding
 
 		if (parent->layout == L_TABBED && parent->children->length > 1) {
-			int i, x = 0, w, l, r;
+			int x = 0, w, r;
+			size_t i, l;
 			l = parent->children->length;
 			w = geometry.size.w / l;
 			r = geometry.size.w % l;
@@ -862,7 +862,8 @@ void update_geometry(swayc_t *container) {
 			geometry.size.h -= (border_bottom + title_bar.size.h);
 			container->title_bar_geometry = title_bar;
 		} else if (parent->layout == L_STACKED && parent->children->length > 1) {
-			int i, y = 0;
+			size_t i = 0;
+			int y = 0;
 			for (i = 0; i < parent->children->length; ++i) {
 				swayc_t *view = parent->children->items[i];
 				if (view == container) {
@@ -951,7 +952,7 @@ static void apply_auto_layout(swayc_t *container, const double x, const double y
 				bool master_first);
 
 static void arrange_windows_r(swayc_t *container, double width, double height) {
-	int i;
+	size_t i;
 	if (width == -1 || height == -1) {
 		swayc_log(L_DEBUG, container, "Arranging layout for %p", container);
 		width = container->width;
@@ -1001,6 +1002,7 @@ static void arrange_windows_r(swayc_t *container, double width, double height) {
 		{
 			swayc_t *output = swayc_parent_by_type(container, C_OUTPUT);
 			width = output->width, height = output->height;
+			/* TODO WLR
 			for (i = 0; i < desktop_shell.panels->length; ++i) {
 				struct panel_config *config = desktop_shell.panels->items[i];
 				if (config->output == output->handle) {
@@ -1022,6 +1024,7 @@ static void arrange_windows_r(swayc_t *container, double width, double height) {
 					}
 				}
 			}
+			*/
 			int gap = swayc_gap(container);
 			x = container->x = x + gap;
 			y = container->y = y + gap;
@@ -1107,7 +1110,7 @@ static void arrange_windows_r(swayc_t *container, double width, double height) {
 
 	// Arrage floating layouts for workspaces last
 	if (container->type == C_WORKSPACE) {
-		for (int i = 0; i < container->floating->length; ++i) {
+		for (size_t i = 0; i < container->floating->length; ++i) {
 			swayc_t *view = container->floating->items[i];
 			if (view->type == C_VIEW) {
 				update_geometry(view);
@@ -1231,7 +1234,7 @@ void apply_vert_layout(swayc_t *container, const double x, const double y,
 
 void apply_tabbed_or_stacked_layout(swayc_t *container, double x, double y,
 					double width, double height) {
-	int i;
+	size_t i;
 	swayc_t *focused = NULL;
 	for (i = 0; i < container->children->length; ++i) {
 		swayc_t *child = container->children->items[i];
@@ -1380,11 +1383,13 @@ void arrange_windows(swayc_t *container, double width, double height) {
 }
 
 void arrange_backgrounds(void) {
+	/* TODO WLR
 	struct background_config *bg;
-	for (int i = 0; i < desktop_shell.backgrounds->length; ++i) {
+	for (size_t i = 0; i < desktop_shell.backgrounds->length; ++i) {
 		bg = desktop_shell.backgrounds->items[i];
 		wlc_view_send_to_back(bg->handle);
 	}
+	*/
 }
 
 /**
@@ -1482,7 +1487,7 @@ swayc_t *get_swayc_in_direction_under(swayc_t *container, enum movement_directio
 		// Test if we can even make a difference here
 		bool can_move = false;
 		int desired;
-		int idx = index_child(container);
+		size_t idx = index_child(container);
 		if (parent->type == C_ROOT) {
 			swayc_t *output = swayc_adjacent_output(container, dir, &abs_pos, true);
 			if (!output || output == container) {
@@ -1524,7 +1529,7 @@ swayc_t *get_swayc_in_direction_under(swayc_t *container, enum movement_directio
 			if (container->is_floating) {
 				if (desired < 0) {
 					wrap_candidate = parent->floating->items[parent->floating->length-1];
-				} else if (desired >= parent->floating->length){
+				} else if (desired >= (int)parent->floating->length){
 					wrap_candidate = parent->floating->items[0];
 				} else {
 					wrap_candidate = parent->floating->items[desired];
@@ -1533,9 +1538,9 @@ swayc_t *get_swayc_in_direction_under(swayc_t *container, enum movement_directio
 					wlc_view_bring_to_front(wrap_candidate->handle);
 				}
 				return wrap_candidate;
-			} else if (desired < 0 || desired >= parent->children->length) {
+			} else if (desired < 0 || desired >= (int)parent->children->length) {
 				can_move = false;
-				int len = parent->children->length;
+				size_t len = parent->children->length;
 				if (!wrap_candidate && len > 1) {
 					if (desired < 0) {
 						wrap_candidate = parent->children->items[len-1];
@@ -1547,8 +1552,6 @@ swayc_t *get_swayc_in_direction_under(swayc_t *container, enum movement_directio
 					}
 				}
 			} else {
-				sway_log(L_DEBUG, "%s cont %d-%p dir %i sibling %d: %p", __func__,
-					 idx, container, dir, desired, parent->children->items[desired]);
 				return parent->children->items[desired];
 			}
 		}
@@ -1568,7 +1571,7 @@ swayc_t *get_swayc_in_direction(swayc_t *container, enum movement_direction dir)
 }
 
 void recursive_resize(swayc_t *container, double amount, enum wlc_resize_edge edge) {
-	int i;
+	size_t i;
 	bool layout_match = true;
 	sway_log(L_DEBUG, "Resizing %p with amount: %f", container, amount);
 	if (edge == WLC_RESIZE_EDGE_LEFT || edge == WLC_RESIZE_EDGE_RIGHT) {
@@ -1613,8 +1616,6 @@ bool is_auto_layout(enum swayc_layouts layout) {
  * Return the number of master elements in a container
  */
 static inline size_t auto_master_count(const swayc_t *container) {
-	sway_assert(container->children->length >= 0, "Container %p has (negative) children %d",
-			container, container->children->length);
 	return MIN(container->nb_master, (size_t)container->children->length);
 }
 
@@ -1645,17 +1646,16 @@ size_t auto_group_count(const swayc_t *container) {
  * given the index of a container's child, return the index of the first child of the group
  * which index is a member of.
  */
-int auto_group_start_index(const swayc_t *container, int index) {
-	if (index < 0 || ! is_auto_layout(container->layout)
-		|| (size_t)index < container->nb_master) {
+size_t auto_group_start_index(const swayc_t *container, size_t index) {
+	if (!is_auto_layout(container->layout) || index < container->nb_master) {
 		return 0;
 	} else {
 		size_t nb_slaves = auto_slave_count(container);
 		size_t nb_slave_grp = auto_slave_group_count(container);
 		size_t grp_sz = nb_slaves / nb_slave_grp;
 		size_t remainder = nb_slaves % nb_slave_grp;
-		int idx2 = (nb_slave_grp - remainder) * grp_sz + container->nb_master;
-		int start_idx;
+		size_t idx2 = (nb_slave_grp - remainder) * grp_sz + container->nb_master;
+		size_t start_idx;
 		if (index < idx2) {
 			start_idx = ((index - container->nb_master) / grp_sz) * grp_sz + container->nb_master;
 		} else {
@@ -1670,19 +1670,19 @@ int auto_group_start_index(const swayc_t *container, int index) {
  * that follows the one which index is a member of.
  * This makes the function usable to walk through the groups in a container.
  */
-int auto_group_end_index(const swayc_t *container, int index) {
-	if (index < 0 || ! is_auto_layout(container->layout)) {
+size_t auto_group_end_index(const swayc_t *container, size_t index) {
+	if (!is_auto_layout(container->layout)) {
 		return container->children->length;
 	} else {
-		int nxt_idx;
-		if ((size_t)index < container->nb_master) {
+		size_t nxt_idx;
+		if (index < container->nb_master) {
 			nxt_idx = auto_master_count(container);
 		} else {
 			size_t nb_slaves = auto_slave_count(container);
 			size_t nb_slave_grp = auto_slave_group_count(container);
 			size_t grp_sz = nb_slaves / nb_slave_grp;
 			size_t remainder = nb_slaves % nb_slave_grp;
-			int idx2 = (nb_slave_grp - remainder) * grp_sz + container->nb_master;
+			size_t idx2 = (nb_slave_grp - remainder) * grp_sz + container->nb_master;
 			if (index < idx2) {
 				nxt_idx = ((index - container->nb_master) / grp_sz + 1) * grp_sz + container->nb_master;
 			} else {
@@ -1697,13 +1697,10 @@ int auto_group_end_index(const swayc_t *container, int index) {
  * return the index of the Group containing <index>th child of <container>.
  * The index is the order of the group along the container's major axis (starting at 0).
  */
-size_t auto_group_index(const swayc_t *container, int index) {
-	if (index < 0) {
-		return 0;
-	}
+size_t auto_group_index(const swayc_t *container, size_t index) {
 	bool master_first = (container->layout == L_AUTO_LEFT || container->layout == L_AUTO_TOP);
 	size_t nb_slaves = auto_slave_count(container);
-	if ((size_t)index < container->nb_master) {
+	if (index < container->nb_master) {
 		if (master_first || nb_slaves <= 0) {
 			return 0;
 		} else {
@@ -1713,7 +1710,7 @@ size_t auto_group_index(const swayc_t *container, int index) {
 		size_t nb_slave_grp = auto_slave_group_count(container);
 		size_t grp_sz = nb_slaves / nb_slave_grp;
 		size_t remainder = nb_slaves % nb_slave_grp;
-		int idx2 = (nb_slave_grp - remainder) * grp_sz + container->nb_master;
+		size_t idx2 = (nb_slave_grp - remainder) * grp_sz + container->nb_master;
 		size_t grp_idx;
 		if (index < idx2) {
 			grp_idx = (index - container->nb_master) / grp_sz;

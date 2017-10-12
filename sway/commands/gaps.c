@@ -133,7 +133,7 @@ struct cmd_results *cmd_gaps(int argc, char **argv) {
 		arrange_windows(cont->parent, -1, -1);
 	} else if (inout == OUTER) {
 		//resize all workspace.
-		int i,j;
+		size_t i, j;
 		for (i = 0; i < root_container.children->length; ++i) {
 			swayc_t *op = root_container.children->items[i];
 			for (j = 0; j < op->children->length; ++j) {

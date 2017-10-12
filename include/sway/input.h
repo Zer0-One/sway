@@ -1,9 +1,8 @@
 #ifndef _SWAY_INPUT_H
 #define _SWAY_INPUT_H
-
 #include <libinput.h>
 #include "config.h"
-#include "list.h"
+#include <wlr/util/list.h>
 
 struct input_config *new_input_config(const char* identifier);
 

@@ -1,9 +1,8 @@
 #ifndef _SWAY_WORKSPACE_H
 #define _SWAY_WORKSPACE_H
-
 #include <wlc/wlc.h>
 #include <unistd.h>
-#include "list.h"
+#include <wlr/util/list.h>
 #include "layout.h"
 
 extern char *prev_workspace_name;

@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <pcre.h>
+#include <wlr/util/list.h>
 #include "sway/criteria.h"
 #include "sway/container.h"
 #include "sway/config.h"
 #include "stringop.h"
-#include "list.h"
 #include "log.h"
 
 enum criteria_type { // *must* keep in sync with criteria_strings[]
@@ -58,7 +58,7 @@ static void free_crit_token(struct crit_token *crit) {
 }
 
 static void free_crit_tokens(list_t *crit_tokens) {
-	for (int i = 0; i < crit_tokens->length; i++) {
+	for (size_t i = 0; i < crit_tokens->length; i++) {
 		free_crit_token(crit_tokens->items[i]);
 	}
 	list_free(crit_tokens);
@@ -272,8 +272,8 @@ static bool criteria_test(swayc_t *cont, list_t *tokens) {
 	if (cont->type != C_VIEW) {
 		return false;
 	}
-	int matches = 0;
-	for (int i = 0; i < tokens->length; i++) {
+	size_t matches = 0;
+	for (size_t i = 0; i < tokens->length; i++) {
 		struct crit_token *crit = tokens->items[i];
 		switch (crit->type) {
 		case CRIT_CLASS:
@@ -404,7 +404,7 @@ void free_criteria(struct criteria *crit) {
 }
 
 bool criteria_any(swayc_t *cont, list_t *criteria) {
-	for (int i = 0; i < criteria->length; i++) {
+	for (size_t i = 0; i < criteria->length; i++) {
 		struct criteria *bc = criteria->items[i];
 		if (criteria_test(cont, bc->tokens)) {
 			return true;
@@ -414,8 +414,8 @@ bool criteria_any(swayc_t *cont, list_t *criteria) {
 }
 
 list_t *criteria_for(swayc_t *cont) {
-	list_t *criteria = config->criteria, *matches = create_list();
-	for (int i = 0; i < criteria->length; i++) {
+	list_t *criteria = config->criteria, *matches = list_create();
+	for (size_t i = 0; i < criteria->length; i++) {
 		struct criteria *bc = criteria->items[i];
 		if (criteria_test(cont, bc->tokens)) {
 			list_add(matches, bc);
@@ -436,11 +436,11 @@ static void container_match_add(swayc_t *container, struct list_tokens *list_tok
 }
 
 list_t *container_for(list_t *tokens) {
-	struct list_tokens list_tokens = (struct list_tokens){create_list(), tokens};
+	struct list_tokens list_tokens = (struct list_tokens){list_create(), tokens};
 
 	container_map(&root_container, (void (*)(swayc_t *, void *))container_match_add, &list_tokens);
 	
-	for (int i = 0; i < scratchpad->length; ++i) {
+	for (size_t i = 0; i < scratchpad->length; ++i) {
 		swayc_t *c = scratchpad->items[i];
 		if (criteria_test(c, tokens)) {
 			list_add(list_tokens.list, c);

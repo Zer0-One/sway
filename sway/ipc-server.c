@@ -12,7 +12,6 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <json-c/json.h>
-#include <list.h>
 #include <libinput.h>
 #ifdef __linux__
 struct ucred {
@@ -21,6 +20,7 @@ struct ucred {
 	gid_t gid;
 };
 #endif
+#include <wlr/util/list.h>
 #include "sway/ipc-json.h"
 #include "sway/ipc-server.h"
 #include "sway/security.h"
@@ -29,7 +29,6 @@ struct ucred {
 #include "sway/input.h"
 #include "stringop.h"
 #include "log.h"
-#include "list.h"
 #include "util.h"
 
 static int ipc_socket = -1;
@@ -111,15 +110,17 @@ void ipc_init(void) {
 	setenv("I3SOCK", ipc_sockaddr->sun_path, 1);
 	setenv("SWAYSOCK", ipc_sockaddr->sun_path, 1);
 
-	ipc_client_list = create_list();
-	ipc_get_pixel_requests = create_list();
+	ipc_client_list = list_create();
+	ipc_get_pixel_requests = list_create();
 
-	ipc_event_source = wlc_event_loop_add_fd(ipc_socket, WLC_EVENT_READABLE, ipc_handle_connection, NULL);
+	// TODO WLR
+	//ipc_event_source = wlc_event_loop_add_fd(ipc_socket, WLC_EVENT_READABLE, ipc_handle_connection, NULL);
 }
 
 void ipc_terminate(void) {
 	if (ipc_event_source) {
-		wlc_event_source_remove(ipc_event_source);
+		// TODO WLR
+		//wlc_event_source_remove(ipc_event_source);
 	}
 	close(ipc_socket);
 	unlink(ipc_sockaddr->sun_path);
@@ -345,7 +346,7 @@ void ipc_client_disconnect(struct ipc_client *client) {
 	if (client->writable_event_source) {
 		wlc_event_source_remove(client->writable_event_source);
 	}
-	int i = 0;
+	size_t i = 0;
 	while (i < ipc_client_list->length && ipc_client_list->items[i] != client) i++;
 	list_del(ipc_client_list, i);
 	free(client->write_buffer);
@@ -366,10 +367,10 @@ void ipc_get_pixels(wlc_handle output) {
 		return;
 	}
 
-	list_t *unhandled = create_list();
+	list_t *unhandled = list_create();
 
 	struct get_pixels_request *req;
-	int i;
+	size_t i;
 	for (i = 0; i < ipc_get_pixel_requests->length; ++i) {
 		req = ipc_get_pixel_requests->items[i];
 		if (req->output != output) {
@@ -768,7 +769,7 @@ void ipc_client_handle_command(struct ipc_client *client) {
 		}
 		json_object *inputs = json_object_new_array();
 		if (input_devices) {
-			for(int i = 0; i<input_devices->length; i++) {
+			for (size_t i = 0; i<input_devices->length; i++) {
 				struct libinput_device *device = input_devices->items[i];
 				json_object_array_add(inputs, ipc_json_describe_input(device));
 			}
@@ -880,7 +881,7 @@ void ipc_client_handle_command(struct ipc_client *client) {
 		if (!buf[0]) {
 			// Send list of configured bar IDs
 			json_object *bars = json_object_new_array();
-			int i;
+			size_t i;
 			for (i = 0; i < config->bars->length; ++i) {
 				struct bar_config *bar = config->bars->items[i];
 				json_object_array_add(bars, json_object_new_string(bar->id));
@@ -891,7 +892,7 @@ void ipc_client_handle_command(struct ipc_client *client) {
 		} else {
 			// Send particular bar's details
 			struct bar_config *bar = NULL;
-			int i;
+			size_t i;
 			for (i = 0; i < config->bars->length; ++i) {
 				bar = config->bars->items[i];
 				if (strcmp(buf, bar->id) == 0) {
@@ -1002,7 +1003,7 @@ void ipc_get_outputs_callback(swayc_t *container, void *data) {
 static void ipc_get_marks_callback(swayc_t *container, void *data) {
 	json_object *object = (json_object *)data;
 	if (container->marks) {
-		for (int i = 0; i < container->marks->length; ++i) {
+		for (size_t i = 0; i < container->marks->length; ++i) {
 			char *mark = (char *)container->marks->items[i];
 			json_object_array_add(object, json_object_new_string(mark));
 		}
@@ -1030,7 +1031,7 @@ void ipc_send_event(const char *json_string, enum ipc_command_type event) {
 		}
 	}
 
-	int i;
+	size_t i;
 	struct ipc_client *client;
 	for (i = 0; i < ipc_client_list->length; i++) {
 		client = ipc_client_list->items[i];
@@ -1136,8 +1137,8 @@ void ipc_event_binding_keyboard(struct sway_binding *sb) {
 
 	const char *names[10];
 
-	int len = get_modifier_names(names, sb->modifiers);
-	int i;
+	size_t len = get_modifier_names(names, sb->modifiers);
+	size_t i;
 	json_object *modifiers = json_object_new_array();
 	for (i = 0; i < len; ++i) {
 		json_object_array_add(modifiers, json_object_new_string(names[i]));

@@ -4,7 +4,7 @@
 #include "sway/commands.h"
 #include "sway/config.h"
 #include "sway/input_state.h"
-#include "list.h"
+#include <wlr/util/list.h>
 #include "log.h"
 #include "stringop.h"
 #include "util.h"
@@ -22,7 +22,7 @@ struct cmd_results *cmd_bindsym(int argc, char **argv) {
 		return cmd_results_new(CMD_FAILURE, "bindsym",
 				"Unable to allocate binding");
 	}
-	binding->keys = create_list();
+	binding->keys = list_create();
 	binding->modifiers = 0;
 	binding->release = false;
 	binding->bindcode = false;
@@ -44,7 +44,7 @@ struct cmd_results *cmd_bindsym(int argc, char **argv) {
 	binding->command = join_args(argv + 1, argc - 1);
 
 	list_t *split = split_string(argv[0], "+");
-	for (int i = 0; i < split->length; ++i) {
+	for (size_t i = 0; i < split->length; ++i) {
 		// Check for a modifier key
 		uint32_t mod;
 		if ((mod = get_modifier_mask_by_name(split->items[i])) > 0) {
@@ -106,7 +106,7 @@ struct cmd_results *cmd_bindcode(int argc, char **argv) {
 		return cmd_results_new(CMD_FAILURE, "bindsym",
 				"Unable to allocate binding");
 	}
-	binding->keys = create_list();
+	binding->keys = list_create();
 	binding->modifiers = 0;
 	binding->release = false;
 	binding->bindcode = true;
@@ -128,7 +128,7 @@ struct cmd_results *cmd_bindcode(int argc, char **argv) {
 	binding->command = join_args(argv + 1, argc - 1);
 
 	list_t *split = split_string(argv[0], "+");
-	for (int i = 0; i < split->length; ++i) {
+	for (size_t i = 0; i < split->length; ++i) {
 		// Check for a modifier key
 		uint32_t mod;
 		if ((mod = get_modifier_mask_by_name(split->items[i])) > 0) {

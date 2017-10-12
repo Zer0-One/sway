@@ -1,10 +1,10 @@
 #ifndef _SWAY_UTIL_H
 #define _SWAY_UTIL_H
-
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h> 
 #include <xkbcommon/xkbcommon.h>
+#include <wlr/util/list.h>
 
 /**
  * Wrap i into the range [0, max[
@@ -35,7 +35,7 @@ const char *get_modifier_name_by_mask(uint32_t modifier);
  *
  * Populates the names array and return the number of names added.
  */
-int get_modifier_names(const char **names, uint32_t modifier_masks);
+size_t get_modifier_names(const char **names, uint32_t modifier_masks);
 
 /**
  * Get the pid of a parent process given the pid of a child process.
@@ -61,5 +61,8 @@ char* resolve_path(const char* path);
 
 char *b64_encode(const char* binaryData, size_t len, size_t *flen);
 unsigned char *b64_decode(const char *ascii, size_t len, size_t *flen);
+
+void list_swap(list_t *list, int src, int dest);
+void list_stable_sort(list_t *list, int compare(const void *a, const void *b));
 
 #endif

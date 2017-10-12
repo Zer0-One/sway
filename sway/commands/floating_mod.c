@@ -2,7 +2,7 @@
 #include <strings.h>
 #include "sway/commands.h"
 #include "sway/input_state.h"
-#include "list.h"
+#include <wlr/util/list.h>
 #include "log.h"
 #include "stringop.h"
 #include "util.h"
@@ -12,7 +12,7 @@ struct cmd_results *cmd_floating_mod(int argc, char **argv) {
 	if ((error = checkarg(argc, "floating_modifier", EXPECTED_AT_LEAST, 1))) {
 		return error;
 	}
-	int i;
+	size_t i;
 	list_t *split = split_string(argv[0], "+");
 	config->floating_mod = 0;
 

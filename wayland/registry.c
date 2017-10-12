@@ -247,7 +247,7 @@ static const struct wl_registry_listener registry_listener = {
 struct registry *registry_poll(void) {
 	struct registry *registry = malloc(sizeof(struct registry));
 	memset(registry, 0, sizeof(struct registry));
-	registry->outputs = create_list();
+	registry->outputs = list_create();
 	registry->input = calloc(sizeof(struct input), 1);
 	registry->input->xkb.context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 

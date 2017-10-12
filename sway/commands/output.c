@@ -6,9 +6,9 @@
 #include <strings.h>
 #include <unistd.h>
 #include <wordexp.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
 #include "sway/config.h"
-#include "list.h"
 #include "log.h"
 #include "stringop.h"
 
@@ -198,7 +198,7 @@ struct cmd_results *cmd_output(int argc, char **argv) {
 		// this is during startup then there will be no container and config
 		// will be applied during normal "new output" event from wlc.
 		swayc_t *cont = NULL;
-		for (int i = 0; i < root_container.children->length; ++i) {
+		for (size_t i = 0; i < root_container.children->length; ++i) {
 			cont = root_container.children->items[i];
 			if (cont->name && ((strcmp(cont->name, output->name) == 0) || (strcmp(output->name, "*") == 0))) {
 				apply_output_config(output, cont);

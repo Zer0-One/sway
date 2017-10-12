@@ -1,9 +1,8 @@
 #ifndef _SWAYBAR_BAR_H
 #define _SWAYBAR_BAR_H
-
 #include "client/registry.h"
 #include "client/window.h"
-#include "list.h"
+#include <wlr/util/list.h>
 
 struct bar {
 	struct config *config;

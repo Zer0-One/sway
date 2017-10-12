@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <libinput.h>
+#include <wlr/util/list.h>
 #include "sway/config.h"
 #include "sway/input.h"
-#include "list.h"
 #include "log.h"
 
 struct input_config *new_input_config(const char* identifier) {

@@ -1,8 +1,8 @@
 #define _XOPEN_SOURCE 500
 #include <string.h>
+#include <wlr/util/list.h>
 #include "sway/commands.h"
 #include "sway/criteria.h"
-#include "list.h"
 #include "log.h"
 #include "stringop.h"
 
@@ -19,7 +19,7 @@ struct cmd_results *cmd_no_focus(int argc, char **argv) {
 		return cmd_results_new(CMD_FAILURE, "no_focus", "Unable to allocate criteria");
 	}
 	crit->crit_raw = strdup(criteria);
-	crit->tokens = create_list();
+	crit->tokens = list_create();
 	crit->cmdlist = NULL;
 	char *err_str = extract_crit_tokens(crit->tokens, crit->crit_raw);
 

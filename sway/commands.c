@@ -17,6 +17,7 @@
 #include <limits.h>
 #include <float.h>
 #include <libinput.h>
+#include <wlr/util/list.h>
 #include "sway/layout.h"
 #include "sway/focus.h"
 #include "sway/workspace.h"
@@ -33,7 +34,6 @@
 #include "stringop.h"
 #include "sway.h"
 #include "util.h"
-#include "list.h"
 #include "log.h"
 
 struct cmd_handler {
@@ -120,8 +120,9 @@ void input_cmd_apply(struct input_config *input) {
 		// Try to find the input device and apply configuration now. If
 		// this is during startup then there will be no container and config
 		// will be applied during normal "new input" event from wlc.
+		/* TODO WLR
 		struct libinput_device *device = NULL;
-		for (int i = 0; i < input_devices->length; ++i) {
+		for (size_t i = 0; i < input_devices->length; ++i) {
 			device = input_devices->items[i];
 			char* dev_identifier = libinput_dev_unique_id(device);
 			if (!dev_identifier) {
@@ -134,12 +135,12 @@ void input_cmd_apply(struct input_config *input) {
 				break;
 			}
 		}
+		*/
 	}
 }
 
 void remove_view_from_scratchpad(swayc_t *view) {
-	int i;
-	for (i = 0; i < scratchpad->length; i++) {
+	for (size_t i = 0; i < scratchpad->length; i++) {
 		if (scratchpad->items[i] == view) {
 			if (sp_index == 0) {
 				sp_index = scratchpad->length - 1;
@@ -389,7 +390,7 @@ struct cmd_results *handle_command(char *_exec, enum command_context context) {
 			char *criteria_string = argsep(&head, "]");
 			if (head) {
 				++head;
-				list_t *tokens = create_list();
+				list_t *tokens = list_create();
 				char *error;
 
 				if ((error = extract_crit_tokens(tokens, criteria_string))) {
@@ -453,7 +454,7 @@ struct cmd_results *handle_command(char *_exec, enum command_context context) {
 				free_argv(argc, argv);
 				goto cleanup;
 			}
-			int i = 0;
+			size_t i = 0;
 			do {
 				if (!containers) {
 					current_container = get_focused_container(&root_container);
@@ -603,7 +604,7 @@ struct cmd_results *config_commands_command(char *exec) {
 	}
 
 	struct command_policy *policy = NULL;
-	for (int i = 0; i < config->command_policies->length; ++i) {
+	for (size_t i = 0; i < config->command_policies->length; ++i) {
 		struct command_policy *p = config->command_policies->items[i];
 		if (strcmp(p->command, cmd) == 0) {
 			policy = p;

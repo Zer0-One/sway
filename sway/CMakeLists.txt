@@ -1,5 +1,5 @@
 include_directories(
-	${PROTOCOLS_INCLUDE_DIRS}
+    #${PROTOCOLS_INCLUDE_DIRS}
 	${WLC_INCLUDE_DIRS}
 	${WLR_INCLUDE_DIRS}
 	${PCRE_INCLUDE_DIRS}
@@ -18,6 +18,7 @@ file(GLOB cmds
 )
 
 add_executable(sway
+    server.c
 	commands.c
 	${cmds}
 	base64.c
@@ -25,9 +26,7 @@ add_executable(sway
 	container.c
 	criteria.c
 	debug_log.c
-	extensions.c
 	focus.c
-	handlers.c
 	input.c
 	input_state.c
 	ipc-json.c
@@ -46,8 +45,9 @@ add_definitions(
 
 target_link_libraries(sway
 	sway-common
-	sway-protocols
-	sway-wayland
+    # TODO WLR
+    #sway-protocols
+	#sway-wayland
 	${WLC_LIBRARIES}
 	${WLR_LIBRARIES}
 	${XKBCOMMON_LIBRARIES}

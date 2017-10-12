@@ -119,10 +119,10 @@ static bool resize_tiled(int amount, bool use_width) {
 	//    below the "sane" size threshold.
 	bool valid = true;
 	swayc_t *focused = parent->children->items[idx_focused];
-	int start = use_major ? 0 : auto_group_start_index(parent, idx_focused);
-	int end = use_major ? parent->children->length : auto_group_end_index(parent, idx_focused);
-	sway_log(L_DEBUG, "Check children of container %p [%d,%d[", container, start, end);
-	for (int i = start; i < end; ) {
+	size_t start = use_major ? 0 : auto_group_start_index(parent, idx_focused);
+	size_t end = use_major ? parent->children->length : auto_group_end_index(parent, idx_focused);
+	sway_log(L_DEBUG, "Check children of container %p [%zd,%zd[", container, start, end);
+	for (size_t i = start; i < end; ) {
 		swayc_t *sibling = parent->children->items[i];
 		double pixels = amount;
 		bool is_before = use_width ? sibling->x < focused->x : sibling->y < focused->y;
@@ -143,11 +143,11 @@ static bool resize_tiled(int amount, bool use_width) {
 			break;
 		}
 		i = use_major ? auto_group_end_index(parent, i) : (i + 1);
-		sway_log(L_DEBUG, "+++++ check %i", i);
+		sway_log(L_DEBUG, "+++++ check %zd", i);
 	}
 	// 3. Apply the size change
 	if (valid) {
-		for (int i = start; i < end; ) {
+		for (size_t i = start; i < end; ) {
 			int next_i = use_major ? auto_group_end_index(parent, i) : (i + 1);
 			swayc_t *sibling = parent->children->items[i];
 			double pixels = amount;

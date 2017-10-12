@@ -99,11 +99,13 @@ static void render_sharp_line(cairo_t *cairo, uint32_t color, double x, double y
 int get_font_text_height(const char *font) {
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 200);
 	cairo_t *cr = cairo_create(surface);
+	/* TODO WLR
 	int width, height;
 	get_text_size(cr, font, &width, &height, 1, false, "Gg");
+	*/
 	cairo_surface_destroy(surface);
 	cairo_destroy(cr);
-	return height;
+	return 1 /* height */;
 }
 
 static void render_borders(swayc_t *view, cairo_t *cr, struct border_colors *colors, bool top) {
@@ -186,6 +188,7 @@ static void render_title_bar(swayc_t *view, cairo_t *cr, struct wlc_geometry *b,
 	render_sharp_line(cr, colors->border, x, y, tb->size.w, 1);
 
 	// text
+	/* TODO WLR
 	if (view->name) {
 		int width, height;
 		get_text_size(cr, config->font, &width, &height, 1, false, "%s", view->name);
@@ -242,6 +245,7 @@ static void render_title_bar(swayc_t *view, cairo_t *cr, struct wlc_geometry *b,
 				y + tb->size.h - 1,
 				tb->size.w, 1);
 	}
+	*/
 }
 
 /**
@@ -271,7 +275,7 @@ static char *generate_container_title(swayc_t *container) {
 	}
 	snprintf(name, len, "sway: %c[", layout);
 
-	int i;
+	size_t i;
 	for (i = 0; i < container->children->length; ++i) {
 		prev_name = name;
 		swayc_t* child = container->children->items[i];
@@ -330,8 +334,7 @@ void update_tabbed_stacked_titlebars(swayc_t *c, cairo_t *cr, struct wlc_geometr
 			return;
 		}
 
-		int i;
-		for (i = 0; i < c->children->length; ++i) {
+		for (size_t i = 0; i < c->children->length; ++i) {
 			swayc_t *child = c->children->items[i];
 			update_tabbed_stacked_titlebars(child, cr, g, focused, focused_inactive);
 		}
@@ -402,8 +405,7 @@ static void update_view_border(swayc_t *view) {
 		}
 
 		// generate container titles
-		int i;
-		for (i = 0; i < p->children->length; ++i) {
+		for (size_t i = 0; i < p->children->length; ++i) {
 			swayc_t *child = p->children->items[i];
 			if (child->type == C_CONTAINER) {
 				generate_container_title(child);
@@ -471,7 +473,7 @@ void update_container_border(swayc_t *container) {
 		update_view_border(container);
 		return;
 	} else {
-		for (int i = 0; i < container->children->length; ++i) {
+		for (size_t i = 0; i < container->children->length; ++i) {
 			update_container_border(container->children->items[i]);
 		}
 	}

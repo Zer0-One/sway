@@ -17,7 +17,7 @@ struct cmd_results *bar_cmd_modifier(int argc, char **argv) {
 	uint32_t mod = 0;
 
 	list_t *split = split_string(argv[0], "+");
-	for (int i = 0; i < split->length; ++i) {
+	for (size_t i = 0; i < split->length; ++i) {
 		uint32_t tmp_mod;
 		if ((tmp_mod = get_modifier_mask_by_name(split->items[i])) > 0) {
 			mod |= tmp_mod;
